@@ -2,9 +2,7 @@ import React, { useEffect, useState } from "react";
 import { createRoot } from "react-dom/client";
 import "./style.css";
 
-const API =
-  import.meta.env.VITE_API_URL ||
-  "http://localhost:8000/api";
+const API = "http://localhost:8000/api";
 
 /* =========================================================
    UI TRANSLATIONS
@@ -916,104 +914,107 @@ function App() {
      DOWNLOAD PDF
   ======================================================= */
 
-  async function downloadPDF(
-    analysisId
-  ) {
+ async function downloadPDF(
+  analysisId
+) {
 
-    setMessage("");
+  setMessage("");
 
-    try {
+  try {
 
-      const response =
-        await fetch(
-          `${API}/reports/${analysisId}/pdf`,
-          {
-            method: "GET",
+    const response =
+      await fetch(
+        `${API}/reports/${analysisId}/pdf?language=${encodeURIComponent(language)}`,
+        {
+          method: "GET",
 
-            headers: {
-              Authorization:
-                `Bearer ${token}`,
-            },
-          }
-        );
-
-
-      if (
-        response.status ===
-        401
-      ) {
-
-        logout();
-        return;
-      }
-
-
-      if (!response.ok) {
-
-        const data =
-          await response
-            .json()
-            .catch(
-              () => null
-            );
-
-        setMessage(
-          data?.detail ||
-            "Failed to generate PDF."
-        );
-
-        return;
-      }
-
-
-      const blob =
-        await response.blob();
-
-
-      const url =
-        window.URL.createObjectURL(
-          blob
-        );
-
-
-      const link =
-        document.createElement(
-          "a"
-        );
-
-
-      link.href =
-        url;
-
-      link.download =
-        `agrivision-${analysisId}.pdf`;
-
-
-      document.body.appendChild(
-        link
+          headers: {
+            Authorization:
+              `Bearer ${token}`,
+          },
+        }
       );
 
-      link.click();
 
-      link.remove();
+    if (
+      response.status ===
+      401
+    ) {
+
+      logout();
+      return;
+    }
 
 
-      window.URL.revokeObjectURL(
-        url
-      );
+    if (!response.ok) {
 
-    } catch (error) {
-
-      console.error(
-        "PDF error:",
-        error
-      );
+      const data =
+        await response
+          .json()
+          .catch(
+            () => null
+          );
 
       setMessage(
-        "Failed to download PDF."
+        data?.detail ||
+          "Failed to generate PDF."
       );
+
+      return;
     }
+
+
+    const blob =
+      await response.blob();
+
+
+    const url =
+      window.URL.createObjectURL(
+        blob
+      );
+
+
+    const link =
+      document.createElement(
+        "a"
+      );
+
+
+    link.href =
+      url;
+
+
+    link.download =
+      `agrivision-${analysisId}-${language}.pdf`;
+
+
+    document.body.appendChild(
+      link
+    );
+
+
+    link.click();
+
+
+    link.remove();
+
+
+    window.URL.revokeObjectURL(
+      url
+    );
+
+  } catch (error) {
+
+    console.error(
+      "PDF error:",
+      error
+    );
+
+    setMessage(
+      "Failed to download PDF."
+    );
   }
+}
 
 
   /* =======================================================
